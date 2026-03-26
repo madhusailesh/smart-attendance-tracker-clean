@@ -1,7 +1,7 @@
 const { Groq } = require("groq-sdk");
 const Schedule = require("../models/Schedule");
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
+require('dotenv').config();
 exports.processTimeTable = async (req, res) => {
   try {
     // Filhaal hum image se text manually ya simple OCR se bhejenge
