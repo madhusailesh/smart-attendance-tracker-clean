@@ -3,6 +3,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Setup from './pages/Setup';
+import UploadSchedule from './pages/UploadSchedule';
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
 
@@ -18,6 +19,7 @@ function App() {
           />
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/setup" element={isAuthenticated ? <Setup /> : <Navigate to="/login" />} />
+          <Route path="/upload" element={isAuthenticated ? <UploadSchedule /> : <Navigate to="/login" />} />
         </Routes>
       </div>
     </Router>

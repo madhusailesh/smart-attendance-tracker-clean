@@ -3,50 +3,52 @@ import API from '../api';
 import { useNavigate } from 'react-router-dom';
 
 const UploadSchedule = () => {
-    const [rawText, setRawText] = useState('');
+    const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleParse = async () => {
+    const handleUpload = async (e) => {
+        e.preventDefault();
+        if (!file) return alert("Photo toh select kar!");
+
+        const formData = new FormData();
+        formData.append('timetable', file);
+
         setLoading(true);
         try {
-            // 1. Send text to Groq AI
-            const res = await API.post('/ai/process-timetable', { rawText });
-            const parsedData = res.data; // AI se JSON mil gaya
-
-            // 2. Save this parsed schedule to our MongoDB
-            // Hum ek loop chalayenge har day ke liye
-            for (const daySchedule of parsedData.schedule) {
-                await API.post('/ai/save-schedule', daySchedule);
-            }
-
-            alert("AI has successfully organized your schedule! 🚀");
+            // Backend ko File bhejo
+            const res = await API.post('/ai/process-timetable', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            // AI se parsed data milne ke baad dashboard pe bhej do
+            console.log("AI Parsed Data:", res.data);
+            alert("AI ne timetable samajh liya hai! 🎯");
             navigate('/dashboard');
         } catch (err) {
-            alert("AI was confused. Please try again with clearer text.");
+            alert("Error: Image clear nahi thi ya AI ko samajh nahi aya.");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="p-8 max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold mb-4 text-blue-700">Upload Time-Table</h2>
-            <p className="text-gray-600 mb-6">Paste your class timings here. My AI will handle the rest.</p>
-            
-            <textarea 
-                className="w-full h-64 p-4 border-2 border-dashed border-blue-300 rounded-xl focus:border-blue-500 outline-none"
-                placeholder="Example: Monday - 10am Math, 11am Physics. Tuesday - 2pm Lab..."
-                onChange={(e) => setRawText(e.target.value)}
-            ></textarea>
-
-            <button 
-                onClick={handleParse}
-                disabled={loading || !rawText}
-                className={`mt-6 w-full p-4 rounded-xl font-bold text-white transition ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
-            >
-                {loading ? "AI is Thinking... 🧠" : "Analyze with AI"}
-            </button>
+        <div className="flex flex-col items-center p-10 bg-white min-h-screen">
+            <h2 className="text-2xl font-bold mb-4">Upload Timetable Image</h2>
+            <form onSubmit={handleUpload} className="border-4 border-dashed border-blue-200 p-10 rounded-3xl text-center">
+                <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => setFile(e.target.files[0])} 
+                    className="mb-6"
+                />
+                <button 
+                    className={`w-full p-3 rounded-xl text-white font-bold ${loading ? 'bg-gray-400' : 'bg-blue-600'}`}
+                    disabled={loading}
+                >
+                    {loading ? "AI Reading Image..." : "Upload & Analyze"}
+                </button>
+            </form>
         </div>
     );
 };
